@@ -116,6 +116,7 @@ def get_content(query):
         headers=headers,
         params=query_id_data)
     # 获取文章总数
+    time.sleep(2)
     max_num = appmsg_response.json().get('app_msg_cnt')
     print("共有%d页" % int(int(max_num) / 5 + 1))
     start = int(input("请输入开始爬取的页码："))
@@ -152,92 +153,10 @@ def get_content(query):
                 'URL': link
             }
             save_to_db(**dict)
+            time.sleep(2)
         start = start + 1
         print('正在翻页，请耐心等待')
-        time.sleep(2)
-    # print("共有%d页" % max_num+1)
-    # start = int(input("请输入开始爬取的页码："))
-    # end = int(input("请输入结束爬取的页码："))
-    # while (end - start) + 1 > 0:
-    #     query_id_data = {
-    #         'token': token,
-    #         'lang': 'zh_CN',
-    #         'f': 'json',
-    #         'ajax': '1',
-    #         'random': random.random(),
-    #         'action': 'list_ex',
-    #         'begin': '{}'.format(str(start*5-5)),
-    #         'count': '5',
-    #         'query': '',
-    #         'fakeid': fakeid,
-    #         'type': '9'
-    #     }
-    #     print('正在爬取第%d页' % start)
-    #     query_fakeid_response = requests.get(
-    #         appmsg_url,
-    #         cookies=cookies,
-    #         headers=headers,
-    #         params=query_id_data)
-    #     json = query_fakeid_response.json()
-    #     length = len(json['app_msg_list'])
-    #     for each in range(length):
-    #         title = json['app_msg_list'][each]['title']
-    #         digest = json['app_msg_list'][each]['digest']
-    #         link = json['app_msg_list'][each]['link']
-    #         dict = {
-    #             '标题': title,
-    #             '摘要': digest,
-    #             'URL': link
-    #         }
-
-
-
-    # 每页至少有5条，获取文章总的页数，爬取时需要分页爬
-    # num = int(int(max_num) / 5)
-    # # 起始页begin参数，往后每页加5
-    # begin = 0
-    # seq = 0
-    # while num + 1 > 0:
-    #     query_id_data = {
-    #         'token': token,
-    #         'lang': 'zh_CN',
-    #         'f': 'json',
-    #         'ajax': '1',
-    #         'random': random.random(),
-    #         'action': 'list_ex',
-    #         'begin': '{}'.format(str(begin)),
-    #         'count': '5',
-    #         'query': '',
-    #         'fakeid': fakeid,
-    #         'type': '9'
-    #     }
-    #     print('正在翻页：--------------', begin)
-        # time.sleep(5)
-
-        # # 获取每一页文章的标题和链接地址，并写入本地文本中
-        # query_fakeid_response = requests.get(
-        #     appmsg_url,
-        #     cookies=cookies,
-        #     headers=headers,
-        #     params=query_id_data)
-        # fakeid_list = query_fakeid_response.json().get('app_msg_list')
-        # if fakeid_list:
-        #     for item in fakeid_list:
-        #         content_link = item.get('link')
-        #         content_title = item.get('title')
-        #         fileName = query + '.txt'
-        #         seq += 1
-        #         with open(fileName, 'w', encoding='utf-8') as fh:
-        #             fh.write(
-        #                 str(seq) +
-        #                 "|" +
-        #                 content_title +
-        #                 "|" +
-        #                 content_link +
-        #                 "\n")
-        # num -= 1
-        # begin = int(begin)
-        # begin += 5
+        time.sleep(3)
 
 
 def save_to_db(**kwargs):

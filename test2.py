@@ -71,8 +71,7 @@ def get_selectd_messages(url):
             comments_dict = {}
             for j in range(comment_number):
                 text = jsons['data']['data'][j]['text']
-                content = ''.join(re.findall('[\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001\uff1f\u300a\u300b'
-                                             '\u4e00-\u9fa5]', text))
+                content = ''.join(re.findall('[\u4e00-\u9fa5]', text))
                 time = jsons['data']['data'][j]['created_at']
                 created_at = format_time(time)
                 # print(created_at)
@@ -98,8 +97,7 @@ def get_selectd_messages(url):
                     counts = len(a)
                     if counts == 1:
                         text = a[0]['text']
-                        reply_content = ''.join(re.findall('[\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001'
-                                                           '\uff1f\u300a\u300b\u4e00-\u9fa5]', text))
+                        reply_content = ''.join(re.findall('[\u4e00-\u9fa5]', text))
                         time = a[0]['created_at']
                         reply_created_at = format_time(time)
                         reply_user_id = a[0]['user']['id']
@@ -127,8 +125,7 @@ def get_selectd_messages(url):
                         # print(dict)
                     elif counts == 2:
                         text1 = a[0]['text']
-                        reply_content1 = ''.join(re.findall('[\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001'
-                                                            '\uff1f\u300a\u300b\u4e00-\u9fa5]', text1))
+                        reply_content1 = ''.join(re.findall('[\u4e00-\u9fa5]', text1))
                         time1 = a[0]['created_at']
                         reply_created_at1 = format_time(time1)
                         reply_user_id1 = a[0]['user']['id']
@@ -145,8 +142,7 @@ def get_selectd_messages(url):
                             "回复用户性别": reply_user_gender1
                         }
                         text2 = a[1]['text']
-                        reply_content2 = ''.join(re.findall('[\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001'
-                                                            '\uff1f\u300a\u300b\u4e00-\u9fa5]', text2))
+                        reply_content2 = ''.join(re.findall('[\u4e00-\u9fa5]', text2))
                         time2 = a[1]['created_at']
                         reply_created_at2 = format_time(time2)
                         reply_user_id2 = a[1]['user']['id']
@@ -221,27 +217,8 @@ def get_pics_url(search_url):
         return " "
 
 
-def save_to_db(**kwargs):
-    try:
-        db = pymysql.connect(host='localhost', user='root', password='103035', port=3306, db='sqltest', charset='utf8')
-        cursor = db.cursor()
-        sql = "insert IGNORE into djangoapp_microblog(发布时间, 微博内容, 评论, 投票活动, 视频, 图片, 点赞数, 评论数, 转发数)" \
-              "values (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        params = (
-            kwargs["发布时间"], kwargs["微博内容"], kwargs["评论"], kwargs["投票活动"], kwargs["视频"],
-            kwargs["图片"], kwargs["点赞数"], kwargs["评论数"], kwargs["转发数"])
-
-        cursor.execute(sql, params)
-
-        db.commit()
-        cursor.close()
-        db.close()
-    except:
-        print("连接失败")
-
-
 if __name__ == '__main__':
-    pages = range(1, 3)
+    pages = range(1)
     for page in pages:
         url = "https://m.weibo.cn/api/container/getIndex?uid=2376916624&" \
               "luicode=10000011&lfid=1076032376916624&type=uid&value=2376916624&" \
@@ -251,16 +228,15 @@ if __name__ == '__main__':
         print(numbers)
         for number in range(1, numbers):
             Micro_blog_content = "".join(
-                re.findall('[\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001\uff1f\u300a\u300b\u4e00-\u9fa5]',
-                           page_content['data']['cards'][number]['mblog']['text']))
+                re.findall('[\u4e00-\u9fa5]', page_content['data']['cards'][number]['mblog']['text']))
             comments_url = 'https://m.weibo.cn/comments/hotflow?id=' + page_content['data']['cards'][number]['mblog']['id'] + \
                   '&mid=' + page_content['data']['cards'][number]['mblog']['id'] + '&max_id_type=0'
-            comments = str(get_selectd_messages(comments_url))
+            comments = get_selectd_messages(comments_url)
             url_two = page_content['data']['cards'][number]['scheme']
             OBJ = re.findall('^.*?status/(.*?)\?mblogid.*?', url_two)
             id = "".join(OBJ)
             search_url = "https://m.weibo.cn/statuses/show?id=" + str(id)
-            pics = str(get_pics_url(search_url))
+            pics = get_pics_url(search_url)
             reply = get_json_page(search_url)
             created_at_time = reply['data']['created_at']
             created_at = format_time(created_at_time)
@@ -274,22 +250,10 @@ if __name__ == '__main__':
                 "微博内容": Micro_blog_content,
                 "图片": pics,
                 "视频": video,
-                "投票活动": vote,
+                "投票": vote,
                 "点赞数": praise_points,
                 "评论数": comment_numbers,
                 "转发数": forwarding_numbers,
                 "评论": comments
             }
-            # save_to_db(**data_dict)
             print(data_dict)
-
-
-# 遇到的一些问题
-# 1."Data too long for column '发布时间' at row 1")
-# mysql> SET @@global.sql_mode='';之后不再报错，而是警告。
-# from requests.packages import urllib3
-# urllib3.disable_warnings()用来关闭警告
-# 2.由于微博中可能不会同时存在视频，投票活动，图片，通过json得到None。
-# Warning: (1048, "Column '投票活动' cannot be null")
-# 3.xadmin中删除一个自增id后位置空缺；
-# mysql> alter table djangoapp_microblog AUTO_INCREMENT=1;进行重置id。
